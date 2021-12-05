@@ -36,6 +36,34 @@ testServers=[744519581598744669]
 
 #,654478468540792845
 
+"""create an event that, given a command execution in a server, checks if the bot has permissions to do so"""
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.errors.CheckFailure):
+        await ctx.send("You do not have permission to use this command!")
+    elif isinstance(error, commands.errors.MissingRequiredArgument):
+        await ctx.send("You are missing a required argument!")
+    elif isinstance(error, commands.errors.BadArgument):
+        await ctx.send("Bad argument!")
+    elif isinstance(error, commands.errors.CommandNotFound):
+        await ctx.send("Command not found!")
+    elif isinstance(error, commands.errors.CommandOnCooldown):
+        await ctx.send("Command on cooldown!")
+    elif isinstance(error, commands.errors.DisabledCommand):
+        await ctx.send("Command disabled!")
+    elif isinstance(error, commands.errors.TooManyArguments):
+        await ctx.send("Too many arguments!")
+    elif isinstance(error, commands.errors.UserInputError):
+        await ctx.send("User input error!")
+    elif isinstance(error, commands.errors.CommandInvokeError):
+        await ctx.send("Command invoke error!")
+    elif isinstance(error, commands.errors.CommandError):
+        await ctx.send("Command error!")
+    elif isinstance(error, commands.errors.MissingPermissions):
+        await ctx.send("Missing permissions!")
+    elif isinstance(error, commands.errors.BotMissingPermissions):
+        await ctx.send("Bot missing permissions!")
+
 
 @bot.slash_command(guild_ids=testServers, name="test", aliases=["test"], description="test", usage="test")
 async def ping(ctx):
