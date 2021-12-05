@@ -21,7 +21,8 @@ def read_token():
 
 #los cogs sirven para dividir el codigo en partes, dentro de un cog se pueden poner comandos y eventos
 #importamos los cogs que esten en la carpeta ./cogs
-for filename in os.listdir('./cogs'):
+#para cargarse, un cog necesita la funcion Setup
+for filename in os.listdir('./HelpingHandBot/cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
     else:
@@ -73,6 +74,7 @@ async def on_command_error(ctx, error):
         await ctx.send("Bot missing permissions!")
 
 
+    
 @bot.slash_command(guild_ids=testServers, name="test", aliases=["test"], description="test", usage="test")
 async def ping(ctx):
     await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
@@ -80,7 +82,7 @@ async def ping(ctx):
 @bot.slash_command(guild_ids=testServers)
 async def hello(ctx,
     causa:Option(str,'lo que queres que se diga a el usuario'),
-        usuario: Option(discord.Member,'el usuario al que quieres que se lo diga',required=False,default=None)):
+    usuario: Option(discord.Member,'el usuario al que quieres que se lo diga',required=False,default=None)):
     await ctx.defer()
     if usuario is None:
         usuario = ctx.author
@@ -112,7 +114,7 @@ async def users(ctx):
 async def randomchoiceguild(ctx):
     users = ctx.guild.members
     await ctx.respond(f"{random.choice(users).mention}, {random.choice(users).mention}, {random.choice(users).mention}")
-        
+    
 
 @bot.event
 async def on_command_error(ctx, exc):
