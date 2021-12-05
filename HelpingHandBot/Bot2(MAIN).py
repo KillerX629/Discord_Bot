@@ -19,6 +19,14 @@ def read_token():
     with open("token.txt", "r") as f:
         return f.read()
 
+#los cogs sirven para dividir el codigo en partes, dentro de un cog se pueden poner comandos y eventos
+#importamos los cogs que esten en la carpeta ./cogs
+for filename in os.listdir('./cogs'):
+    if filename.endswith('.py'):
+        bot.load_extension(f'cogs.{filename[:-3]}')
+    else:
+        print("No se ha podido cargar el cog: " + filename[:-3])
+
 
 
 """
