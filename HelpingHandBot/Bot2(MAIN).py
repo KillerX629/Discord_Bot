@@ -3,8 +3,10 @@ import discord
 from discord.ext import commands
 from discord import Option
 import random
-import pymongo
+import pymongo #depende también de DNSPython
 import os
+from auxFunctions import *
+
 
 intents = discord.Intents.default()
 intents.members = True
@@ -14,10 +16,17 @@ intents.members = True
 bot = commands.Bot(command_prefix="?", intents=intents)
 
 
-"""create a function that reads the token from a file"""
-def read_token():
-    with open("token.txt", "r") as f:
-        return f.read()
+
+
+
+
+
+
+    
+db = pymongo.MongoClient(read_access())
+
+
+
 
 #los cogs sirven para dividir el codigo en partes, dentro de un cog se pueden poner comandos y eventos
 #importamos los cogs que esten en la carpeta ./cogs
@@ -36,14 +45,16 @@ ctx.send was an alias to ctx.respond in the alpha, however this was changed in t
 you need to respond at least once to not get the This interaction failed!
 """
 
-#
+
 
 
 token = read_token()
 
-testServers=[744519581598744669]
 
-#,654478468540792845
+testServers=read_guilds()
+
+
+#744519581598744669,654478468540792845
 
 """create an event that, given a command execution in a server, checks if the bot has permissions to do so"""
 @bot.event
@@ -74,7 +85,6 @@ async def on_command_error(ctx, error):
         await ctx.send("Bot missing permissions!")
 
 
-    
 @bot.slash_command(guild_ids=testServers, name="test", aliases=["test"], description="test", usage="test")
 async def ping(ctx):
     await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
@@ -87,6 +97,30 @@ async def hello(ctx,
     if usuario is None:
         usuario = ctx.author
     await ctx.respond(f"Hola {usuario.mention}! {causa}")
+
+
+@bot.user_command(guild_ids=testServers)
+@commands.is_owner()
+async def jeringoso(ctx,user:discord.Member):
+    respuesta = ""
+    for i in range(len(user.name)):
+        match user.name[i]:
+            case 'a':
+                respuesta += 'apa'
+            case 'e':
+                respuesta += 'epe'
+            case 'i':
+                respuesta += 'ipi'
+            case 'o':
+                respuesta += 'opo'
+            case 'u':
+                respuesta += 'upu'
+            case default:
+                respuesta += user.name[i]
+    
+    await ctx.respond(f"El nombre de {user.mention} en jeringoso es: {respuesta}")
+                
+
 
 @bot.user_command(guild_ids=testServers, name='Puto')
 async def puto(ctx, user: discord.Member):
@@ -108,6 +142,15 @@ async def users(ctx):
     for member in ctx.guild.members:
         await ctx.respond(f"{member.name}")
     
+
+@bot.slash_command(guild_ids=testServers, name='stop')
+@commands.is_owner()
+async def STOP(ctx):
+    #el comando stop hace que el bot frene su ejecución inmediatamente
+    await ctx.respond(":thumbsup:")
+    await bot.close()
+    
+
 
 """create a slash command that mentions 3 users at random from the guild"""
 @bot.slash_command(guild_ids=testServers, name='randomchoiceguild')
