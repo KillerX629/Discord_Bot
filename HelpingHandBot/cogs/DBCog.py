@@ -1,7 +1,7 @@
 import re
 from typing_extensions import Required
 from discord.commands.commands import Option, slash_command
-from discord.ext.commands.core import check
+from discord.ext.commands.core import T, check
 import pymongo
 import discord
 from discord.ext import commands
@@ -64,17 +64,30 @@ class DBCog(commands.Cog):
         else:
             await ctx.respond("Ya existe un trabajo con ese nombre")
         
+    @commands.slash_command(guild_ids=testServers, name="showserveritems")
+    async def showServerItems(self, ctx):
+        baseDeDatos = self.cluster.get_database(name=str(ctx.guild.id))
+        cluster = baseDeDatos.get_collection("items")
+        items = cluster.find()
+        #damos formato al texto resultante para que sea más legible:
+        await ctx.respond("```" + "\n".join(["{}:{}, {}$".format(item["_id"],item["descripcion"],item["precio"]) for item in items]) + "```")
+    
     @commands.slash_command(guild_ids=testServers, name="showuseritems")
     async def showuseritems(self,ctx):
        await ctx.respond(str(self.cluster.get_database(name=str(ctx.guild.id)).get_collection("users").find_one({"_id":ctx.author.id}.get("items"))))
             
     @commands.slash_command(guild_ids=testServers, name="spawnitem")
     @commands.is_owner()
-    async def giveitem(self,ctx,
-                       item:str,
-                       quantity:int):
-        await self.giveitem(item,ctx.author,quantity)
-        await ctx.respond("Se han añadido " + str(quantity) + " " + item + " al inventario de " + ctx.author.name)
+    async def spawnItem(self,ctx,
+                       item:Option(str,'El item que se dara',Required=True),
+                       quantity:Option(int,'La cantidad de items que se daran',min=1),
+                       user:Option(discord.Member,'El usuario al que se le dará el item',Required=False,default=None)):
+        
+        if self.getItem(item):
+            await self.giveitem(item, ctx.author.id if user is None else user ,quantity)
+            await ctx.respond("Se han añadido " + str(quantity) + " " + item + " al inventario de " + ctx.author.name if user is None else user.name)
+        else:
+            await ctx.respond("El item no existe")
     
     @commands.slash_command(guild_ids=testServers, name="createitem")
     @commands.is_owner()
@@ -119,7 +132,7 @@ class DBCog(commands.Cog):
         else:
             cluster.update_one({"_id":user.id},{"$inc":{"items."+item:quantity}})
             
-    async def getitem(self,item:str,user:discord.Member):
+    async def getItemCountUser(self,item:str,user:discord.Member):
         baseDeDatos = self.cluster.get_database(name=str(user.guild.id))
         cluster = baseDeDatos.get_collection("users")
         if cluster.find_one({"_id":user.id}) is None:
@@ -140,5 +153,15 @@ class DBCog(commands.Cog):
                 return True
             else:
                 return False
+            
+    async def getItem(self,item:str): 
+        #observamos si el item existe en la base de datos
+        baseDeDatos = self.cluster.get_database(name=str(ctx.guild.id))
+        cluster = baseDeDatos.get_collection("items")
+        if cluster.find_one({"_id":item}) is None:
+            return False
+        else:
+            return True
+        
     
     

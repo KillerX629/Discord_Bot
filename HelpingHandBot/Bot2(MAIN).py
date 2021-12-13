@@ -1,5 +1,6 @@
 from typing_extensions import Required
-import discord 
+import discord
+from discord.commands.commands import option 
 from discord.ext import commands
 from discord import Option
 import random
@@ -89,7 +90,11 @@ async def on_command_error(ctx, error):
 async def ping(ctx):
     await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
 
-
+@bot.slash_command(guild_ids=testServers, name="showuserid")
+@commands.is_owner()
+async def showuserID(ctx,
+                     user:Option(discord.Member,"el usuario de quien se mostrará el número de ID",Required=True)):
+    await ctx.respond(f"El ID de {user.name} es {user.id}")
 
 
 @bot.user_command(guild_ids=testServers)
