@@ -63,6 +63,11 @@ class DBCog(commands.Cog):
             
         else:
             await ctx.respond("Ya existe un trabajo con ese nombre")
+        
+    @commands.slash_command(guild_ids=testServers, name="giveitem")
+    async def showuseritems(self,ctx):
+       await ctx.respond(str(self.cluster.get_database(name=str(ctx.guild.id)).get_collection("users").find_one({"_id":ctx.author.id}.get("items"))))
+    
             
     @commands.slash_command(guild_ids=testServers, name="createitem")
     @commands.is_owner()
@@ -98,5 +103,34 @@ class DBCog(commands.Cog):
         else:
             return "False"
         
+    async def giveitem(self,item:str,user:discord.Member,quantity:int):
+        baseDeDatos = self.cluster.get_database(name=str(user.guild.id))
+        cluster = baseDeDatos.get_collection("users")
+        if cluster.find_one({"_id":user.id}) is None:
+            cluster.insert_one({"_id":user.id,"items":{item:quantity}})
+        else:
+            cluster.update_one({"_id":user.id},{"$inc":{"items."+item:quantity}})
+            
+    async def getitem(self,item:str,user:discord.Member):
+        baseDeDatos = self.cluster.get_database(name=str(user.guild.id))
+        cluster = baseDeDatos.get_collection("users")
+        if cluster.find_one({"_id":user.id}) is None:
+            return 0
+        else:
+            return cluster.find_one({"_id":user.id})["items"][item]
+    
+    async def subtractitem(self,item:str,user:discord.Member,quantity:int):
+        baseDeDatos = self.cluster.get_database(name=str(user.guild.id))
+        cluster = baseDeDatos.get_collection("users")
+        if cluster.find_one({"_id":user.id}) is None:
+            return False
+        else:
+            #buscamos si la cantidad actual del item es mayor o igual a la cantidad que queremos restar
+            #si no lo es, devolvemos False
+            if cluster.find_one({"_id":user.id})["items"][item] >= quantity:
+                cluster.update_one({"_id":user.id},{"$inc":{"items."+item:-quantity}})
+                return True
+            else:
+                return False
     
     
