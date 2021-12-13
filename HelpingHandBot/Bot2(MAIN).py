@@ -89,14 +89,7 @@ async def on_command_error(ctx, error):
 async def ping(ctx):
     await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
 
-@bot.slash_command(guild_ids=testServers)
-async def hello(ctx,
-    causa:Option(str,'lo que queres que se diga a el usuario'),
-    usuario: Option(discord.Member,'el usuario al que quieres que se lo diga',required=False,default=None)):
-    await ctx.defer()
-    if usuario is None:
-        usuario = ctx.author
-    await ctx.respond(f"Hola {usuario.mention}! {causa}")
+
 
 
 @bot.user_command(guild_ids=testServers)

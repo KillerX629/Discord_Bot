@@ -64,21 +64,29 @@ class DBCog(commands.Cog):
         else:
             await ctx.respond("Ya existe un trabajo con ese nombre")
         
-    @commands.slash_command(guild_ids=testServers, name="giveitem")
+    @commands.slash_command(guild_ids=testServers, name="showuseritems")
     async def showuseritems(self,ctx):
        await ctx.respond(str(self.cluster.get_database(name=str(ctx.guild.id)).get_collection("users").find_one({"_id":ctx.author.id}.get("items"))))
-    
             
+    @commands.slash_command(guild_ids=testServers, name="spawnitem")
+    @commands.is_owner()
+    async def giveitem(self,ctx,
+                       item:str,
+                       quantity:int):
+        await self.giveitem(item,ctx.author,quantity)
+        await ctx.respond("Se han añadido " + str(quantity) + " " + item + " al inventario de " + ctx.author.name)
+    
     @commands.slash_command(guild_ids=testServers, name="createitem")
     @commands.is_owner()
     async def createItem(self, ctx,
                          name:Option(str,'El nombre del item',Required=True),
                          desc:Option(str,'La descripción del item'),
-                         price:Option(int,'El precio del item'),
+                         price:Option(float,'El precio del item'),
                          type:Option(str,'El tipo de item')):
         if self.cluster.get_database(name=str(ctx.guild.id)).get_collection("items").find_one({"_id":name}) is None:
             self.cluster.get_database(name=str(ctx.guild.id)).get_collection(
                 "items").insert_one({"_id": name, "descripcion": desc, "precio": price, "tipo": type})
+            await ctx.respond("Se ha creado el item " + name)
         else:
             await ctx.respond("Ya existe un item con ese nombre")
             
